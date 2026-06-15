@@ -310,18 +310,6 @@ class cCiscoCWStrings:
 class cIOSProcess:
 
     dFields = {
-                664: {
-                        'addressProcessName': ('>I', 0xC8),
-                        'PC':                 ('>I', 0x70),
-                        'Q':                  ('>I', 0xCC),
-                        'Ty':                 ('>I', 0x64),
-                        'Runtime':            ('>I', 0x9C),
-                        'Invoked':            ('>I', 0x250),
-                        'Stack1':             ('>I', 0x84),
-                        'Stack2':             ('>I', 0x80),
-                        'addressStackBlock':  ('>I', 0x00),
-                        'addressTTY':         ('>I', 0xF0),
-                     },
                 692: {
                         'addressProcessName': ('>I', 0xD0),
                         'PC':                 ('>I', 0x6C),
@@ -391,7 +379,7 @@ class cIOSProcess:
         self.error = ''
         self.processID = processID
         self.data = data
-        self.indexProcessEnd = self.data.find(cCiscoMagic.STR_PROCESS_END, 600, len(data))  # BEEFCAFE can appear early in the process as well, parse for one near end of known range
+        self.indexProcessEnd = self.data.find(cCiscoMagic.STR_PROCESS_END, 690, len(data))  # BEEFCAFE can appear early in the process as well, parse for one near end of known range
         if self.indexProcessEnd < 0:
             self.error = 'Error: parsing process structure, BEEFCAFE not found'
             return
@@ -409,9 +397,8 @@ class cIOSProcess:
             else:
                 self.Ty_str = cIOSProcess.Ty2Str(self.Ty)
             addressIter = self.addressStackBlock
-            if self.Stack2 is not None:
-                while oIOSCoreDump.GetInteger32(addressIter) == 0xFFFFFFFF and addressIter - self.addressStackBlock <= self.Stack2:
-                    addressIter += 4
+            while oIOSCoreDump.GetInteger32(addressIter) == 0xFFFFFFFF and addressIter - self.addressStackBlock <= self.Stack2:
+                addressIter += 4
             self.LowWaterMark = addressIter - self.addressStackBlock
             if self.addressTTY is None:
                 self.TTY = None
